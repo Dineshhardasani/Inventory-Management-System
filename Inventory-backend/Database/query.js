@@ -1,8 +1,4 @@
 const query=`
-DROP TABLE IF EXISTS orderdetail;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS product;
-DROP TABLE IF EXISTS customer;
 CREATE TABLE IF NOT EXISTS product (
     warehouse varchar(256),
     name varchar(256),

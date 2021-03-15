@@ -9,8 +9,13 @@ var con=mysql.createConnection({
 });
 
 const db=con.connect(function(err){
-    if (err) throw err;
-    console.log("Database Connected!");
+    if (err){
+        const error=new Error("Data base connection Failed");
+        throw error;
+    }
+    else{
+        console.log("Database Connected!");
+    }
 })
 
 module.exports=con;

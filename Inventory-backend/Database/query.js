@@ -19,9 +19,8 @@ CREATE TABLE IF NOT EXISTS orders (
     quantity int(11) NOT NULL,
     status varchar(256) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (customer_email) REFERENCES customer(email),
-    CONSTRAINT FK1 FOREIGN KEY (product_name) REFERENCES product(name)
-    ON DELETE CASCADE 
+    FOREIGN KEY (customer_email) REFERENCES customer(email) ON DELETE CASCADE,
+    FOREIGN KEY (product_name) REFERENCES product(name) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS orderdetail (
     order_id int(11),

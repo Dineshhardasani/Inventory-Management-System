@@ -12,7 +12,6 @@ exports.postAddProduct=async (req,res,next)=>{
         function make(){
             db.query("INSERT INTO product(name,stock,warehouse) VALUES(?,?,?)",
             [name,stock,warehouse],function(err,result,field){
-                console.log(err);
                 if(err){
                     myReject("There is some error ! Please Try Again");
                 }
@@ -28,7 +27,7 @@ exports.postAddProduct=async (req,res,next)=>{
                     myReject("There is some error ! Please Try Again");
                 }
                 else if(result.length>0){
-                    myReject("You Can Not Add Multiple Product with Same Name and Same Warehouse");
+                    myReject("You Can Not Add Multiple Product with Same Name and Warehouse");
                 }
                 else{
                     cb();
@@ -80,7 +79,7 @@ exports.postBookOrder=async (req,res,next)=>{
     var product_name=req.body.product_name;
     var status="Confirmed";
     let myPromise=new Promise(function(myResolve,myReject){
-        //Validation
+        //Check Required Stock is Available or not
         function validate(cb){
             db.query("SELECT SUM(stock) FROM product WHERE name=?",
             [product_name],function(error,result,field){
@@ -94,7 +93,7 @@ exports.postBookOrder=async (req,res,next)=>{
                         cb();
                     }
                     else{
-                        myReject("This much quantity is not available, Please Try Again with Less Quantity");
+                        myReject("Please Try Again with Less Quantity");
                     }
                 }
             });
@@ -105,6 +104,7 @@ exports.postBookOrder=async (req,res,next)=>{
                 if(err1){ 
                     myReject("There is some Error!");
                 }
+                //Inserting order information in order table
                 db.query("INSERT INTO orders(customer_email,product_name,quantity,status) VALUES(?,?,?,?)",
                 [customer_email,product_name,quantity,status],async function(err,result){
                     if(err){
@@ -115,7 +115,7 @@ exports.postBookOrder=async (req,res,next)=>{
                     //order Id Retrival
                     var order_id = JSON.stringify(result);
                     order_id=JSON.parse(order_id)['insertId'];
-                    
+                    //Select All warehouse and stock of this product
                     db.query("SELECT * FROM product WHERE stock>0 AND name=?",
                     [product_name],function(error,result){
                         if(error){
@@ -126,7 +126,8 @@ exports.postBookOrder=async (req,res,next)=>{
 
                         var results = JSON.stringify(result);
                         results=JSON.parse(results);
-                        console.log(results);
+                        
+                        //Taking Stock From Warehouse and inserting it to orderdetails
                         async.forEach(results,function(result,callback) {
                             if(quantity>0){
                                 var UpdatedStock=0,takenStock=result['stock'];
@@ -151,6 +152,7 @@ exports.postBookOrder=async (req,res,next)=>{
                                 myReject("There is some Error!");
                             });
                         });
+                        //Commit All the changes.
                         db.commit(function(error){
                             if(error){
                                 myReject("There is some Error!");
@@ -272,7 +274,6 @@ exports.postCancelOrder=(req,res,next)=>{
 }
 
 exports.postUpdateStock=(req,res,next)=>{
-    console.log("Updating Stock Started....");
     var name=req.body.name;
     var stock=req.body.stock;
     var warehouse=req.body.warehouse;
@@ -304,7 +305,6 @@ exports.postUpdateStock=(req,res,next)=>{
 }
 
 exports.getProducts=(req,res,next)=>{
-    console.log("Fetching All products .....");
     db.query("SELECT * FROM product",function(err,result){
         if(err){
             res.status("404").json({message:"Product Fetching Failed!"});
@@ -317,13 +317,11 @@ exports.getProducts=(req,res,next)=>{
     })
 }
 exports.getOrders=(req,res,next)=>{
-    console.log("Fetching All orders .....");
     db.query("SELECT customer.name as name,orders.product_name as product_name,orders.quantity as quantity,orders.status as status,orders.id as id FROM orders INNER JOIN customer ON orders.customer_email=customer.email",function(err,result){
         if(err){
             res.status("404").json({message:"Product Fetching Failed!"});
         }
         else{
-            console.log(result);
             result=JSON.stringify(result);
             result=JSON.parse(result);
             res.status(200).json(result);

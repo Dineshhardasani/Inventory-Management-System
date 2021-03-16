@@ -64,7 +64,6 @@ class Home extends Component {
                         <div className="row row-header">
                             <div className="col-12 col-sm-6">
                                 <h1>Inventory Management</h1>
-                                <p>Please Manage your inventory here!</p>
                             </div>
                         </div>
                     </div>
